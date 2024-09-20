@@ -12,7 +12,11 @@ class Router {
                 $rt = explode("::", $route['handler']);
                 $class = new $rt[0];
                 $func = $rt[1];
-                $class->$func();
+                if ($args != null) {
+                    $class->$func($args);
+                } else {
+                    $class->$func();
+                }
                 return;
             }
         }
