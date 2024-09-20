@@ -1,0 +1,25 @@
+{
+    "name": "azelea/core",
+    "description": "The core for the azelea php lightweight framework",
+    "type": "library",
+    "license": "none",
+    "autoload": {
+        "psr-4": {
+            "Azelea\\Core\\": "src/"
+        },
+        "files": [
+            "controller.php",
+            "fault.php",
+            "router.php"
+        ]
+    },
+    "authors": [
+        {
+            "name": "JustKurayy"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=8.1"
+    }
+}
