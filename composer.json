@@ -5,13 +5,8 @@
     "license": "none",
     "autoload": {
         "psr-4": {
-            "Azelea\\Core\\": "src"
-        },
-        "files": [
-            "src/controller.php",
-            "src/fault.php",
-            "src/router.php"
-        ]
+            "Azelea\\Core\\": "src/"
+        }
     },
     "authors": [
         {
