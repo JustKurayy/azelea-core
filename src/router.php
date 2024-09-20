@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * The AzeleaRouter handles all page loading,
+ * redirects the urls to its correspondig pages and
+ * handles the controllers.
+ * Should be adjusted to load arguments for the controllers
+ * dynamically
+ */
 class Router {
     public function addRoute($method, $path, $handler, $args) {
         $routes[] = array('method' => $method, 'path' => $path, 'handler' => $handler);
@@ -20,6 +27,7 @@ class Router {
                 return;
             }
         }
+        //commented because it is unchecked, resulting in it always returning 404
         return; //http_response_code(404);
     }
 }
