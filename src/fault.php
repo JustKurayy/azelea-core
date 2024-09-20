@@ -1,21 +1,9 @@
 <?php
 
-class Router {
-    public function addRoute($method, $path, $handler, $args) {
-        $routes[] = array('method' => $method, 'path' => $path, 'handler' => $handler);
-        return $this->dispatch("GET", $_SERVER['REQUEST_URI'], $routes, $args);
-    }
-
-    private function dispatch($requestMethod, $requestPath, $routes, $args) {
-        foreach ($routes as $route) {
-            if ($route['method'] === $requestMethod && $route['path'] === $requestPath) {
-                $rt = explode("::", $route['handler']);
-                $class = new $rt[0];
-                $func = $rt[1];
-                $class->$func();
-                return;
-            }
-        }
-        return; //http_response_code(404);
+class FaultManager {
+    public function error($error) {
+        echo $error;
     }
 }
+
+$faultManager = new FaultManager();
