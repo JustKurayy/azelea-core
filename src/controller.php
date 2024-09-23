@@ -4,4 +4,9 @@ class Controller {
         extract($data);
         include "../src/pages/" . $view;
     }
+
+    public function routeToUri(string $route) {
+        header("Location: $route");
+        return;
+    }
 }
