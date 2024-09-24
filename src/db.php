@@ -10,6 +10,7 @@ class DatabaseManager
     private $username;
     private $password;
     private $conn;
+    private $queries = [];
 
     /**
      * When the DatabaseManager is construced, 
@@ -47,6 +48,45 @@ class DatabaseManager
     public function closeConnection() {
         $this->conn = null;
     }
-}
 
-$db = new DatabaseManager();
+    /**
+     * Parses all the data in the class into an sql query.
+     * @param $class
+     * @return void
+     */
+    public function parse($class) {
+        $fields = array_filter(get_class_methods($class), function($method) { //searches for available getters
+            return 'get' === substr($method, 0, 3); //returns all function with "get" in its name
+        });
+        array_shift($fields); //removes getId from the array, since we do not need to fill that anyways
+        $values = []; //empty array for the values of the getters
+        foreach($fields as $f) {
+            array_push($values, "'".$class->$f()."'"); //getter value is surrounding by '' so that the sql query sees them as a string
+        }       
+        $query = sprintf(
+            "INSERT INTO %s (%s) VALUES (%s)", 
+            strtolower($class::class),
+            str_replace("get", "", strtolower(implode(", ", $fields))), //removes "get" from the function name so that it can be used as row name
+            implode(", ", $values)
+        );
+        array_push($this->queries, $query);
+        return;
+    }
+
+    /**
+     * Pushes all local sql queries into the database.
+     * @return void
+     */
+    public function push() {
+        try {
+            $this->conn->beginTransaction();
+            foreach($this->queries as $q) {
+                $this->conn->exec($q);
+            }
+            $this->conn->commit();
+        } catch (PDOException $e) {
+            echo "no";
+            return;
+        }
+    }
+}
