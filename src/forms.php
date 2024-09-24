@@ -6,7 +6,7 @@ class Forms {
 
     /**
      * Generates a CSRF token.
-     * @param string
+     * @param string $name
      */
     private function generateCsrf(string $name) {
         $_SESSION['_csrf'][$name] = bin2hex(random_bytes(32));
@@ -102,5 +102,13 @@ class Forms {
             }
         }
         return false; //incase the button isn't pressed
+    }
+
+    /**
+     * Picks up the filtered data from the form
+     * @param string $id
+     */
+    public function getData(string $id) {
+        return $_POST[$id]; //temp solution
     }
 }
