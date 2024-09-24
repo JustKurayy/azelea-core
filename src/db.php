@@ -49,6 +49,26 @@ class DatabaseManager
         $this->conn = null;
     }
 
+    public function getModel($class) {
+        if (is_numeric($class)) {
+            //search for row id
+        } else {
+            $c = new $class;
+            $fields = array_filter(get_class_methods($c), function($method) { //searches for available getters
+                return 'get' === substr($method, 0, 3); //returns all function with "get" in its name
+            });
+            $query = sprintf(
+                "SELECT %s FROM %s",
+                str_replace("get", "", strtolower(implode(", ", $fields))),
+                strtolower($class)
+            );
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            $stmt->setFetchMode(PDO::FETCH_ASSOC);
+            var_dump($stmt->fetchAll()); //temp
+        }
+    }
+
     /**
      * Parses all the data in the class into an sql query.
      * @param $class
