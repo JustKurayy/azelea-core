@@ -49,29 +49,61 @@ class DatabaseManager
         $this->conn = null;
     }
 
-    public function getModel($class) {
-        if (is_numeric($class)) {
-            //search for row id
-        } else {
-            $c = new $class;
-            $fields = array_filter(get_class_methods($c), function($method) { //searches for available getters
-                return 'get' === substr($method, 0, 3); //returns all function with "get" in its name
-            });
-            $query = sprintf(
-                "SELECT %s FROM %s",
-                str_replace("get", "", strtolower(implode(", ", $fields))),
-                strtolower($class)
-            );
-            $stmt = $this->conn->prepare($query);
-            $stmt->execute();
-            $stmt->setFetchMode(PDO::FETCH_ASSOC);
-            var_dump($stmt->fetchAll()); //temp
+    /**
+     * Pulls the class from the database.
+     * @param string $class name of the class. can be given with ClassExample::class
+     * @param int $id optional
+     */
+    public function getModel($class, int $id = null) {
+        $c = new $class();
+        
+        $fields = array_filter(get_class_methods($c), function($method) {
+            return 'get' === substr($method, 0, 3);
+        });
+        
+        $where = ($id) ? " WHERE id=$id" : "";
+        $query = sprintf(
+            "SELECT %s FROM %s%s",
+            str_replace("get", "", strtolower(implode(", ", $fields))),
+            strtolower($class),
+            $where
+        );
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $stmt->setFetchMode(PDO::FETCH_ASSOC);
+        $data = $stmt->fetchAll();
+        
+        if (empty($data)) {
+            return null; // Handle case where no data is returned
         }
-    }
+        $fields2 = array_filter(get_class_methods($c), function($method) {
+            return 'set' === substr($method, 0, 3);
+        });
+
+        $fieldsMap = [];
+        foreach ($fields2 as $setter) {
+            $fieldName = strtolower(substr($setter, 3)); // Remove 'set' and lowercase
+            $fieldsMap[$fieldName] = $setter;
+        }
+
+        $firstRow = $data[0];
+        foreach ($firstRow as $column => $value) {
+            if (array_key_exists($column, $fieldsMap)) {
+                $setter = $fieldsMap[$column];
+                $c->$setter($value);
+            }
+        }
+        $reflection = new ReflectionClass($class);
+        $property = $reflection->getProperty('id'); // Change 'id' to the actual private property name
+        $property->setAccessible(true);
+        $property->setValue($c, $id);
+        return $c;
+    }    
 
     /**
      * Parses all the data in the class into an sql query.
-     * @param $class
+     * @param class $class
      * @return void
      */
     public function parse($class) {
@@ -89,7 +121,7 @@ class DatabaseManager
             str_replace("get", "", strtolower(implode(", ", $fields))), //removes "get" from the function name so that it can be used as row name
             implode(", ", $values)
         );
-        array_push($this->queries, $query);
+        array_push($this->queries, $query); //adds the current query to the backlog
         return;
     }
 
