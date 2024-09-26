@@ -5,7 +5,7 @@
     "license": "none",
     "autoload": {
         "psr-4": {
-            "Azelea\\Core\\": "src/"
+            "Azelea\\": "src/"
         }
     },
     "authors": [

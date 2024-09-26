@@ -1,4 +1,5 @@
 <?php
+namespace Azelea;
 
 class Forms {
     private $fieldHtml = array();
@@ -35,7 +36,7 @@ class Forms {
                             if ($field["options"]["required"] == false) {
                                 $f .= "required";
                             }
-                        } catch (Exception $e) {
+                        } catch (\Exception $e) {
                             //leaving it empty as no error log is needed here. 
                         }
                     } else {

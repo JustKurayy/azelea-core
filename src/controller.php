@@ -1,4 +1,6 @@
-<?php 
+<?php
+namespace Azelea;
+
 class Controller {
     /**
      * Adds the html page to the screen

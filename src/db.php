@@ -1,4 +1,5 @@
 <?php
+namespace Azelea;
 
 /**
  * The database manager for the AzeleaCore
@@ -25,9 +26,9 @@ class DatabaseManager
         $this->password = $_ENV["DB_PASSWORD"];
 
         try {
-            $this->conn = new PDO("mysql:host=$this->servername;dbname=$this->database", $this->username, $this->password);
-            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        } catch (PDOException $e) {
+            $this->conn = new \PDO("mysql:host=$this->servername;dbname=$this->database", $this->username, $this->password);
+            $this->conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        } catch (\PDOException $e) {
             //insert faultmanager here
         }
     }
@@ -40,7 +41,7 @@ class DatabaseManager
     {
         try {
             $this->conn->exec($sql);
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
             //insert faultmanager here
         }
     }
@@ -71,7 +72,7 @@ class DatabaseManager
         
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
-        $stmt->setFetchMode(PDO::FETCH_ASSOC);
+        $stmt->setFetchMode(\PDO::FETCH_ASSOC);
         $data = $stmt->fetchAll();
         
         if (empty($data)) {
@@ -94,7 +95,7 @@ class DatabaseManager
                 $c->$setter($value);
             }
         }
-        $reflection = new ReflectionClass($class);
+        $reflection = new \ReflectionClass($class);
         $property = $reflection->getProperty('id'); // Change 'id' to the actual private property name
         $property->setAccessible(true);
         $property->setValue($c, $id);
@@ -136,7 +137,7 @@ class DatabaseManager
                 $this->conn->exec($q);
             }
             $this->conn->commit();
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
             echo "no";
             return;
         }

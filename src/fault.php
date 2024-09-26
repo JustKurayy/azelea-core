@@ -1,4 +1,5 @@
 <?php
+namespace Azelea;
 
 /**
  * FaultManager is supposed to make
