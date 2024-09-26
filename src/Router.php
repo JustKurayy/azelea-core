@@ -17,7 +17,7 @@ class Router {
     private function dispatch($requestMethod, $requestPath, $routes, $args = []) {
         foreach ($routes as $route) {
             if ($route['method'] === $requestMethod && $route['path'] === $requestPath) {
-                $rt = explode("::", $route['handler']);
+                $rt = explode("::", $route['handler']); //apparently the namespace wasn't good enough
                 $className = "Azelea\\Core\\".$rt[0];
                 $class = new $className;
                 $func = $rt[1];

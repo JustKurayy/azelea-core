@@ -1,6 +1,6 @@
 <?php
 namespace Azelea\Core;
-echo "db,";
+
 /**
  * The database manager for the AzeleaCore
  */
