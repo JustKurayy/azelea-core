@@ -1,6 +1,6 @@
 <?php
-namespace Azelea;
-
+namespace Azelea\Core;
+echo "db,";
 /**
  * The database manager for the AzeleaCore
  */
@@ -66,7 +66,7 @@ class DatabaseManager
         $query = sprintf(
             "SELECT %s FROM %s%s",
             str_replace("get", "", strtolower(implode(", ", $fields))),
-            strtolower($class),
+            str_replace("azelea\\core\\", "", strtolower($class)),
             $where
         );
         

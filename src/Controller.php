@@ -1,5 +1,5 @@
 <?php
-namespace Azelea;
+namespace Azelea\Core;
 
 class Controller {
     /**

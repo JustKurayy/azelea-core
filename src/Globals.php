@@ -1,5 +1,5 @@
 <?php
-namespace Azelea;
+namespace Azelea\Core;
 
 /**
  * Debugs given param.

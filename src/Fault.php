@@ -1,5 +1,5 @@
 <?php
-namespace Azelea;
+namespace Azelea\Core;
 
 /**
  * FaultManager is supposed to make
@@ -7,10 +7,11 @@ namespace Azelea;
  * and redirect you to its corresponding
  * page in production mode.
  */
-class FaultManager {
+class Fault {
     public function error($error) {
-        echo $error;
+        var_dump($error);
+        die();
     }
 }
 
-$faultManager = new FaultManager();
+$faultManager = new Fault();
