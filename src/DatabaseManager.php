@@ -118,7 +118,7 @@ class DatabaseManager
         }       
         $query = sprintf(
             "INSERT INTO %s (%s) VALUES (%s)", 
-            strtolower($class::class),
+            str_replace("azelea\\core\\", "", strtolower($class::class)),
             str_replace("get", "", strtolower(implode(", ", $fields))), //removes "get" from the function name so that it can be used as row name
             implode(", ", $values)
         );
