@@ -10,6 +10,8 @@ namespace Azelea\Core;
  */
 class Router {
     public function addRoute($method, $path, $handler, $args = []) {
+        header("X-XSS-Protection: 1; mode=block");
+        header("X-Content-Type-Options: nosniff");
         $routes[] = array('method' => $method, 'path' => $path, 'handler' => $handler);
         return $this->dispatch("GET", $_SERVER['REQUEST_URI'], $routes, $args);
     }

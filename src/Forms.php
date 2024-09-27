@@ -21,8 +21,6 @@ class Forms {
      * @param array $fields
      */
     public function generateFields(array $fields) {
-        header("X-XSS-Protection: 1; mode=block");
-        header("X-Content-Type-Options: nosniff");
         foreach ($fields as $field) {
             switch ($field["type"]) {
                 case "text":
