@@ -52,7 +52,7 @@ class DatabaseManager
 
     /**
      * Pulls the class from the database.
-     * @param string $class name of the class. can be given with ClassExample::class
+     * @param string $class name of the class. Can be given with ClassExample::class
      * @param int $id optional
      */
     public function getModel($class, int $id = null) {
