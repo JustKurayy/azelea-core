@@ -29,7 +29,7 @@ class DatabaseManager
             $this->conn = new \PDO("mysql:host=$this->servername;dbname=$this->database", $this->username, $this->password);
             $this->conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         } catch (\PDOException $e) {
-            //insert faultmanager here
+            return Core::error($e);
         }
     }
 
@@ -40,9 +40,9 @@ class DatabaseManager
     public function addSql(string $sql)
     {
         try {
-            $this->conn->exec($sql);
+            return $this->conn->exec($sql);
         } catch (\PDOException $e) {
-            //insert faultmanager here
+            return Core::error($e);
         }
     }
 
@@ -76,7 +76,7 @@ class DatabaseManager
         $data = $stmt->fetchAll();
         
         if (empty($data)) {
-            return null; // Handle case where no data is returned
+            return null;
         }
         $fields2 = array_filter(get_class_methods($c), function($method) {
             return 'set' === substr($method, 0, 3);
@@ -138,8 +138,7 @@ class DatabaseManager
             }
             $this->conn->commit();
         } catch (\PDOException $e) {
-            echo "no";
-            return;
+            return Core::error($e);
         }
     }
 }

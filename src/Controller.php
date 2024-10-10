@@ -9,8 +9,12 @@ class Controller {
      * @return void
      */
     public function render($view, $data = []) {
-        extract($data); //turns the array into multiple variables
-        include "../src/pages/" . $view;
+        try {
+            extract($data); //turns the array into multiple variables
+            include "../src/pages/" . $view;
+        } catch (\Exception $e) {
+            return Core::error($e);
+        }
     }
 
     /**
@@ -29,8 +33,12 @@ class Controller {
      * @return class
      */
     public function buildForm(string $class, $item) {
-        $c = new $class;
-        $c->init();
-        return $c;
+        try {
+            $c = new $class;
+            $c->init();
+            return $c;
+        } catch (\Exception $e) {
+            return Core::error($e);
+        }
     }
 }

@@ -6,29 +6,36 @@ class Core {
     private $path;
     private $sessionManager;
     private $routes;
-    private array $stacktrace = [];
 
     public function __construct($path) {
         $this->path = $path;
-        $dotenv = \Dotenv\Dotenv::createImmutable(dirname($this->path), ".env.local");
-        $dotenv->load();
-        
-        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(realpath(dirname($this->path).'/src/controllers'))) as $filename) {
-            if (str_contains($filename, ".php")) {
-                include $filename;
-            }
+        try {
+            $dotenv = \Dotenv\Dotenv::createImmutable(dirname($this->path), ".env.local");
+            $dotenv->load();
+        } catch (\Exception $e) {
+            return Core::error($e);
         }
         
-        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(realpath(dirname($this->path).'/src/forms'))) as $filename) {
-            if (str_contains($filename, ".php")) {
-                include $filename;
+        try {
+            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(realpath(dirname($this->path).'/src/controllers'))) as $filename) {
+                if (str_contains($filename, ".php")) {
+                    include $filename;
+                }
             }
-        }
-        
-        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(realpath(dirname($this->path).'/src/models'))) as $filename) {
-            if (str_contains($filename, ".php")) {
-                include $filename;
+            
+            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(realpath(dirname($this->path).'/src/forms'))) as $filename) {
+                if (str_contains($filename, ".php")) {
+                    include $filename;
+                }
             }
+            
+            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(realpath(dirname($this->path).'/src/models'))) as $filename) {
+                if (str_contains($filename, ".php")) {
+                    include $filename;
+                }
+            }
+        } catch (\Exception $e) {
+            return Core::error($e);
         }
 
         $this->sessionManager = new Session();
@@ -119,32 +126,147 @@ class Core {
      * @param mixed $item
      * @return exit
      */
-    static function error($item) {
+    static function error($exception) {
+        // Clear the document body
         echo "<script>document.body.innerHTML = '';</script>";
-        $excp = new \Exception();
+        $messg = "";
+        switch ($exception->getCode()) {
+            case 1045:
+                $messg = "Database Credentials do not match. Possibly wrong username or password.";
+                break;
+        }
+
+        // Start outputting the HTML
         ?>
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Azelea Error</title>
-            </head>
-            <style>
-                body{height:100vh;background-color:#3d3938;font-family:Arial, Helvetica, sans-serif;}
-                .wrapper{display:flex;justify-content:center;}
-                .centerdiv{width:1300px;background-color:#872330;padding:20px;color:white;}
-            </style>
-            <body>
-                <div class="wrapper">
-                    <div class="centerdiv"><h2><?=$item?></h2></div>
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Azelea Error</title>
+        </head>
+        <style>
+            body {
+                height: 100vh;
+                background-color: #3d3938;
+                font-family: 'Courier New', Courier, monospace;
+                color: white;
+                margin: 0;
+            }
+            .wrapper {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                height: 100%;
+            }
+            .centerdiv {
+                width: 1300px;
+                background-color: #872330;
+                padding: 20px;
+                color: white;
+                border-radius: 5px;
+            }
+            pre {
+                background-color: #4a4343;
+                padding: 10px;
+                border-radius: 5px;
+                overflow-x: auto;
+                white-space: pre-wrap;
+            }
+            .code {
+                background-color: #1e1e1e; /* VSCode background color */
+                padding: 10px;
+                border-radius: 5px;
+                overflow-x: auto;
+                margin: 5px 0;
+                color: #dcdcdc; /* VSCode text color */
+            }
+            .highlight {
+                background-color: #756628; /* Highlight color */
+                display: inline-block;
+                padding: 0 5px;
+            }
+            .line-number {
+                color: #aaa; /* Muted line number color */
+                display: inline-block;
+                width: 10px; /* Fixed width for alignment */
+                text-align: right; /* Align line numbers to the right */
+                margin-right: 20px; /* Space between line number and code */
+            }
+            .line {
+                display: flex; /* Flex to align line number and code */
+                align-items: center; /* Center align */
+            }
+        </style>
+        <body>
+            <div class="wrapper">
+                <div class="centerdiv">
+                <?php
+                    $line = $exception->getLine();
+                    $file = $exception->getFile();
+
+                    echo "<h2>".$exception->getMessage()."</h2>";
+                    echo "<h4>".$messg."</h4>";
+                    // Display the source code for the error line
+                    echo "<div class='code'>";
+                    echo "<strong>File:</strong> " . htmlspecialchars($file) . " <strong>Line:</strong> " . htmlspecialchars($line) . "<br>";
+
+                    // Get the lines of code
+                    $lines = file($file);
+                    $start = max(0, $line - 3); // 3 lines before
+                    $end = min(count($lines) - 1, $line + 1); // 1 line after
+
+                    for ($i = $start; $i <= $end; $i++) {
+                        // Display line number
+                        echo "<span class='line-number'>" . ($i + 1) . "</span>";
+                        // Highlight the line where the error occurred
+                        if ($i === $line - 1) {
+                            echo "<span class='highlight'>" . htmlspecialchars(trim($lines[$i])) . "</span><br>";
+                        } else {
+                            echo "<span>" . htmlspecialchars(trim($lines[$i])) . "</span><br>";
+                        }
+                    }
+                    echo "</div>";?>
+                    
+                    <h3>Stack Trace:</h3>
+                    
                     <?php
-                        $excp->getLine();
+                    $trace = $exception->getTrace();
+                    foreach ($trace as $entry) {
+                        if (isset($entry['file']) && isset($entry['line'])) {
+                            $file = $entry['file'];
+                            $line = $entry['line'];
+                            // Display the stack trace entry
+                            echo "<div class='code'>";
+                            echo "<strong>File:</strong> " . htmlspecialchars($file) . " <strong>Line:</strong> " . htmlspecialchars($line) . "<br>";
+                            
+                            // Get the surrounding lines of code
+                            $lines = file($file);
+                            $start = max(0, $line - 3); // 3 lines before
+                            $end = min(count($lines) - 1, $line + 1); // 1 line after
+                            for ($i = $start; $i <= $end; $i++) {
+                                // Display line number and code in a flex container
+                                echo "<div class='line'>";
+                                echo "<span class='line-number'>" . ($i + 1) . "</span>";
+                                // Highlight the line where the error occurred
+                                if ($i === $line - 1) {
+                                    echo "<span class='highlight'>" . htmlspecialchars(trim($lines[$i])) . "</span>";
+                                } else {
+                                    echo "<span>" . htmlspecialchars(trim($lines[$i])) . "</span>";
+                                }
+                                echo "</div>"; // Close the line container
+                            }
+                            echo "</div>"; // Close the code block
+                        }
+                    }
                     ?>
                 </div>
-            </body>
-            </html>
+            </div>
+        </body>
+        </html>
         <?php
+        // Stop the script
         die();
-    }
+    }    
 }
