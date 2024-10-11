@@ -1,6 +1,8 @@
 <?php
 namespace Azelea\Core;
 
+use Exception;
+
 class Forms {
     private $fieldHtml = array(); //stores all the fields, also used for loading them in
     private $formField; //stores the input field
@@ -90,9 +92,9 @@ class Forms {
      */
     public function show(string $classes = null) {
         if (count($this->fieldHtml) !== 0) {
-            echo "<form class='$classes' method='post'>".implode($this->fieldHtml)."</form>";
+            return "<form class='$classes' method='post'>".implode($this->fieldHtml)."</form>";
         } else {
-            //should insert faultmanager here
+            throw new Exception("There are no form fields to process (FORM CLASS NULL)");
         }
     }
 

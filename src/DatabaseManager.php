@@ -95,6 +95,7 @@ class DatabaseManager
                 $c->$setter($value);
             }
         }
+        
         $reflection = new \ReflectionClass($class);
         $property = $reflection->getProperty('id'); // Change 'id' to the actual private property name
         $property->setAccessible(true);
