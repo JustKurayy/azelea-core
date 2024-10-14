@@ -1,8 +1,6 @@
 <?php
 namespace Azelea\Core;
 
-use Exception;
-
 class Forms {
     private $fieldHtml = array(); //stores all the fields, also used for loading them in
     private $formField; //stores the input field
@@ -26,38 +24,52 @@ class Forms {
         foreach ($fields as $field) {
             switch ($field["type"]) {
                 case "text":
-                    $this->formField = "<input type='".$field['type']."' name='".$field['name']."' class='".$field['classes']."' id='".$field['name']."'";
-
-                    if (array_key_exists("options", $field)) { //checks if the options field even exists
-                        $this->parseFieldOptions($field["options"], $field);
-                        $this->formField .= ">"; //closes the field
-                        if (array_key_exists("wrapped", $field["options"])) { //wraps the field in a div
-                            $this->formField = "<div class='".$field["options"]["wrapped"]."'>" . $this->formField . "</div>";
-                        }
-                    } else {
-                        $l = "<label id='".$field['name']."'>".$field['name']."</label>";
-                        array_push($this->fieldHtml, $l);
-                        $this->formField .= "required='required'>";
-                    }
-
+                    $this->formField = "<input type='text' name='".$field['name']."' class='".$field['classes']."' id='".$field['name']."'";
+                    $this->checkers($field);
                     array_push($this->fieldHtml, $this->formField); //always loads the field itself
                     break;
                 case "label":
                     $l = "<label class='".$field['classes']."'>".$field['name']."</label>";
                     array_push($this->fieldHtml, $l);
                     break;
+                case "password":
+                    $this->formField = "<input type='password' name='".$field['name']."' class='".$field['classes']."' id='".$field['name']."'";
+                    $this->checkers($field);
+                    array_push($this->fieldHtml, $this->formField); //always loads the field itself
+                    break;
+                case "email":
+                    $this->formField = "<input type='email' name='".$field['name']."' class='".$field['classes']."' id='".$field['name']."'";
+                    $this->checkers($field);
+                    array_push($this->fieldHtml, $this->formField); //always loads the field itself
+                    break;
                 case "submit":
-                    if (empty($_SESSION['_csrf'][$field['name']])) {
-                        $this->generateCsrf($field['name']);
-                    }
+                    if (empty($_SESSION['_csrf'][$field['name']])) $this->generateCsrf($field['name']);
                     $this->csrf = $field['name'];
-
                     $b = "<input type='submit' class='".$field['classes']."' name='submit' value='".$field['name']."'>";
                     array_push($this->fieldHtml, $b);
                     break;
             }
         }
         array_push($this->fieldHtml, "<input type='hidden' name='_csrf' value='".$_SESSION['_csrf'][$this->csrf]."'>");
+    }
+
+    /**
+     * Is repeated multiple times, used to check for form options.
+     * @param array $field
+     * @return void
+     */
+    private function checkers($field) {
+        if (array_key_exists("options", $field)) { //checks if the options field even exists
+            $this->parseFieldOptions($field["options"], $field);
+            $this->formField .= ">"; //closes the field
+            if (array_key_exists("wrapped", $field["options"])) { //wraps the field in a div
+                $this->formField = "<div class='".$field["options"]["wrapped"]."'>" . $this->formField . "</div>";
+            }
+        } else {
+            $l = "<label id='".$field['name']."'>".$field['name']."</label>";
+            array_push($this->fieldHtml, $l);
+            $this->formField .= "required='required'>";
+        }
     }
 
     /**
@@ -91,10 +103,14 @@ class Forms {
      * @param string $classes
      */
     public function show(string $classes = null) {
-        if (count($this->fieldHtml) !== 0) {
-            return "<form class='$classes' method='post'>".implode($this->fieldHtml)."</form>";
-        } else {
-            throw new Exception("There are no form fields to process (FORM CLASS NULL)");
+        try {
+            if (count($this->fieldHtml) !== 0) {
+                return "<form class='$classes' method='post'>".implode($this->fieldHtml)."</form>";
+            } else {
+                throw new \Exception("There are no form fields to process (FORM CLASS NULL)");
+            }
+        } catch(\Exception $e) {
+            Core::error($e);
         }
     }
 

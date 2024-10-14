@@ -5,27 +5,34 @@ namespace Azelea\Core;
  * The AzeleaRouter handles all page loading,
  * redirects the urls to its correspondig pages and
  * handles the controllers.
- * Should be adjusted to load arguments for the controllers
- * dynamically
  */
 class Router {
+    private $routes = [];
+
     public function addRoute($method, $path, $handler, $args = []) {
+        array_push($this->routes, [
+            'method' => $method,
+            'path' => $path,
+            'handler' => $handler,
+            'args' => $args
+        ]);
+    }
+
+    public function load() {
         header("X-XSS-Protection: 1; mode=block");
         header("X-Content-Type-Options: nosniff");
-        // try {
-            if ($method == $_SERVER["REQUEST_METHOD"] && $path == $_SERVER['REQUEST_URI']) {
-                $rt = explode("::", $handler);
+
+        foreach ($this->routes as $route) {
+            if ($route['method'] === $_SERVER["REQUEST_METHOD"] && $route['path'] === $_SERVER['REQUEST_URI']) {
+                $rt = explode("::", $route['handler']);
                 $className = "Azelea\\Core\\" . $rt[0];
                 $class = new $className;
                 $func = $rt[1];
-                $call = (count($args) === 0) ? $class->$func() : $class->$func($args);
-                return;
-            } else {
-                throw new \Exception("Invalid Route");
-                return;
+                $args = $route['args'];
+                return (count($args) === 0) ? $class->$func() : $class->$func($args);
             }
-        // } catch (\Exception $e) {
-        //     return Core::error($e);
-        // }
+        }
+
+        throw new \Exception("Invalid Route");
     }
 }

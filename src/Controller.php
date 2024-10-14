@@ -40,7 +40,7 @@ class Controller {
      * @param mixed $item
      * @return class
      */
-    public function buildForm(string $class, $item) {
+    public function buildForm(string $class, $item = null) {
         try {
             $c = new $class;
             $c->init();

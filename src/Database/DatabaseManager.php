@@ -1,15 +1,12 @@
 <?php
-namespace Azelea\Core;
+namespace Azelea\Core\Database;
+use Azelea\Core\Core;
 
 /**
  * The database manager for the AzeleaCore
  */
 class DatabaseManager
 {
-    private $servername;
-    private $database;
-    private $username;
-    private $password;
     private $conn;
     private $queries = [];
 
@@ -20,17 +17,25 @@ class DatabaseManager
      */
     public function __construct()
     {
-        $this->servername = $_ENV["DB_HOST"];
-        $this->database = $_ENV["DB_NAME"];
-        $this->username = $_ENV["DB_USERNAME"];
-        $this->password = $_ENV["DB_PASSWORD"];
+        $this->openConnection();
+    }
+
+    public function openConnection() {
+        $servername = $_ENV["DB_HOST"];
+        $database = $_ENV["DB_NAME"];
+        $username = $_ENV["DB_USERNAME"];
+        $password = $_ENV["DB_PASSWORD"];
 
         try {
-            $this->conn = new \PDO("mysql:host=$this->servername;dbname=$this->database", $this->username, $this->password);
+            $this->conn = new \PDO("mysql:host=$servername;dbname=$database", $username, $password);
             $this->conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         } catch (\PDOException $e) {
             return Core::error($e);
         }
+    }
+
+    public function closeConnection() {
+        $this->conn = null;
     }
 
     /**
@@ -44,10 +49,6 @@ class DatabaseManager
         } catch (\PDOException $e) {
             return Core::error($e);
         }
-    }
-
-    public function closeConnection() {
-        $this->conn = null;
     }
 
     /**
@@ -141,5 +142,9 @@ class DatabaseManager
         } catch (\PDOException $e) {
             return Core::error($e);
         }
+    }
+
+    public function login() {
+        
     }
 }
