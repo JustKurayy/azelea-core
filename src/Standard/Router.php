@@ -1,5 +1,5 @@
 <?php
-namespace Azelea\Core;
+namespace Azelea\Core\Standard;
 
 /**
  * The AzeleaRouter handles all page loading,

@@ -1,5 +1,6 @@
 <?php
-namespace Azelea\Core;
+namespace Azelea\Core\Standard;
+use Azelea\Core\Core;
 use Azelea\Templater\Loom;
 
 class Controller {
