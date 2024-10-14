@@ -22,6 +22,11 @@ class Controller {
         }
     }
 
+    public function json($data) {
+        header("content-type: application/json");
+        echo $data;
+    }
+
     /**
      * Routes the user to another page
      * @param string $route

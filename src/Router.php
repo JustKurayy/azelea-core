@@ -12,7 +12,7 @@ class Router {
     public function addRoute($method, $path, $handler, $args = []) {
         header("X-XSS-Protection: 1; mode=block");
         header("X-Content-Type-Options: nosniff");
-        try {
+        // try {
             if ($method == $_SERVER["REQUEST_METHOD"] && $path == $_SERVER['REQUEST_URI']) {
                 $rt = explode("::", $handler);
                 $className = "Azelea\\Core\\" . $rt[0];
@@ -24,8 +24,8 @@ class Router {
                 throw new \Exception("Invalid Route");
                 return;
             }
-        } catch (\Exception $e) {
-            return Core::error($e);
-        }
+        // } catch (\Exception $e) {
+        //     return Core::error($e);
+        // }
     }
 }
