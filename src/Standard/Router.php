@@ -1,5 +1,6 @@
 <?php
 namespace Azelea\Core\Standard;
+use Azelea\Core\Core;
 
 /**
  * The AzeleaRouter handles all page loading,
@@ -22,17 +23,21 @@ class Router {
         header("X-XSS-Protection: 1; mode=block");
         header("X-Content-Type-Options: nosniff");
 
-        foreach ($this->routes as $route) {
-            if ($route['method'] === $_SERVER["REQUEST_METHOD"] && $route['path'] === $_SERVER['REQUEST_URI']) {
-                $rt = explode("::", $route['handler']);
-                $className = "Azelea\\Core\\" . $rt[0];
-                $class = new $className;
-                $func = $rt[1];
-                $args = $route['args'];
-                return (count($args) === 0) ? $class->$func() : $class->$func($args);
+        try {
+            foreach ($this->routes as $route) {
+                if ($route['method'] === $_SERVER["REQUEST_METHOD"] && $route['path'] === $_SERVER['REQUEST_URI']) {
+                    $rt = explode("::", $route['handler']);
+                    $className = "Azelea\\Core\\" . $rt[0];
+                    $class = new $className;
+                    $func = $rt[1];
+                    $args = $route['args'];
+                    return (count($args) === 0) ? $class->$func() : $class->$func($args);
+                }
             }
+    
+            throw new \Exception("Invalid Route");
+        } catch (\Exception $e) {
+            Core::error($e);
         }
-
-        throw new \Exception("Invalid Route");
     }
 }
