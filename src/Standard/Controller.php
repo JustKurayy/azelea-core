@@ -12,8 +12,6 @@ class Controller {
      */
     public function render($view, $data = []) {
         try {
-            //extract($data); //turns the array into multiple variables
-            if (!str_contains($view, ".loom.")) throw new \Exception("Page is not a .loom.php templater file");
             $loom = new Loom($data);
             return $loom->render($view);
         } catch (\Exception $e) {

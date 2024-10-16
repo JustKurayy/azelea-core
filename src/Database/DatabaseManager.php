@@ -25,7 +25,6 @@ class DatabaseManager
         $database = $_ENV["DB_NAME"];
         $username = $_ENV["DB_USERNAME"];
         $password = $_ENV["DB_PASSWORD"];
-
         try {
             $this->conn = new \PDO("mysql:host=$servername;dbname=$database", $username, $password);
             $this->conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);

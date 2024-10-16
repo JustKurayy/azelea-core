@@ -2,7 +2,13 @@
 namespace Azelea\Core;
 use Azelea\Core\Session;
 
+/**
+ * The kernel of the Azelea Framework. 
+ * Used for initializing the page. 
+ * Contains error managers too.
+ */
 class Core {
+    private array $readablePaths = ['/src/controllers', '/src/forms', '/src/models'];
     private $path;
     private $sessionManager;
     private $routes;
@@ -15,33 +21,23 @@ class Core {
         } catch (\Exception $e) {
             return Core::error($e);
         }
-        
-        try {
-            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(realpath(dirname($this->path).'/src/controllers'))) as $filename) {
+
+        foreach ($this->readablePaths as $p) {
+            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(realpath(dirname($this->path).$p))) as $filename) {
                 if (str_contains($filename, ".php")) {
                     include $filename;
                 }
             }
-            
-            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(realpath(dirname($this->path).'/src/forms'))) as $filename) {
-                if (str_contains($filename, ".php")) {
-                    include $filename;
-                }
-            }
-            
-            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(realpath(dirname($this->path).'/src/models'))) as $filename) {
-                if (str_contains($filename, ".php")) {
-                    include $filename;
-                }
-            }
-        } catch (\Exception $e) {
-            return Core::error($e);
         }
 
         $this->sessionManager = new Session();
-
-        include $this->path . "/../src/routes.php";
-        $this->routes = new Routes();
+        try {
+            if (!file_exists($this->path . "/../src/routes.php")) throw new \Exception("Routes.php not found, cannot forward to page.");
+            include $this->path . "/../src/routes.php";
+            $this->routes = new Routes();
+        } catch (\Exception $e) {
+            Core::error($e);
+        }
     }
 
     /**
@@ -123,10 +119,10 @@ class Core {
 
     /**
      * Shows stacktrace error. WIP!
-     * @param mixed $item
+     * @param Exception $exception
      * @return exit
      */
-    static function error($exception) {
+    static function error(\Exception $exception) {
         // Clear the document body
         echo "<script>document.body.innerHTML = '';</script>";
         $messg = "";
