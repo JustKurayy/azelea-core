@@ -1,6 +1,7 @@
 <?php
 namespace Azelea\Core;
 use Azelea\Core\Session;
+use Throwable;
 
 /**
  * The kernel of the Azelea Framework. 
@@ -30,6 +31,8 @@ class Core {
             }
         }
 
+        set_exception_handler([$this, 'error']); //sets a custom exception handler
+        
         $this->sessionManager = new Session();
         if(isset($_SESSION['flashes'])) {
             $_SESSION['flashes'] = null;
@@ -125,9 +128,9 @@ class Core {
     /**
      * Shows stacktrace error. WIP!
      * @param Exception $exception
-     * @return exit
+     * @return null
      */
-    static function error(\Exception $exception) {
+    static function error(Throwable $exception) {
         // Clear the document body
         echo "<script>document.body.innerHTML = '';</script>";
         $messg = "";
@@ -136,8 +139,6 @@ class Core {
                 $messg = "Database Credentials do not match. Possibly wrong username or password.";
                 break;
         }
-
-        // Start outputting the HTML
         ?>
         <!DOCTYPE html>
         <html lang="en">

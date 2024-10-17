@@ -26,12 +26,11 @@ class Router {
         try {
             foreach ($this->routes as $route) {
                 if ($route['path'] === $_SERVER['REQUEST_URI']) { //$route['method'] === $_SERVER["REQUEST_METHOD"] && 
-                    $rt = explode("::", $route['handler']);
-                    $className = "Azelea\\Core\\" . $rt[0];
-                    $class = new $className;
-                    $func = $rt[1];
-                    $args = $route['args'];
-                    return (count($args) === 0) ? $class->$func() : $class->$func($args);
+                    $routeParams = explode("::", $route['handler']);
+                    $className = "Azelea\\Core\\" . $routeParams[0];
+                    $classMethod = $routeParams[1];
+                    $class = $this->injectDependencies($className, $classMethod, $route['args']);
+                    return $class;
                 }
             }
     
@@ -40,4 +39,34 @@ class Router {
             Core::error($e);
         }
     }
+
+    /**
+     * Injects dependencies of custom controller methods.
+     * Only works with classes now.
+     * 
+     * @param object|mixed $class Name of the custom controller class
+     * @param string $methodName Name of the method in the custom controller
+     * @param array $userArgs Is passed through custom routes (routes.php)
+     * @return object
+     */
+    private function injectDependencies($class, $methodName, array $userArgs = []) {
+        $reflector = new \ReflectionClass($class);
+        $method = $reflector->getMethod($methodName);
+        $parameters = $method->getParameters();
+        $dependencies = [];
+    
+        foreach ($parameters as $parameter) {
+            $type = $parameter->getType();
+    
+            if ($type && !$type->isBuiltin()) {
+                $className = $type->getName();
+                if (class_exists($className)) array_push($dependencies, new $className());
+            } else {
+                $dependencies[] = null;
+            }
+        }
+
+        $instance = $reflector->newInstance();
+        return $method->invokeArgs($instance, $dependencies);
+    }    
 }

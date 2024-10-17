@@ -33,6 +33,9 @@ class DatabaseManager
         }
     }
 
+    /**
+     * Closes the database connection
+     */
     public function closeConnection() {
         $this->conn = null;
     }
@@ -72,8 +75,11 @@ class DatabaseManager
         };
     
         $one = function($id) use ($tableName, $columns, $c) {
-            $query = sprintf("SELECT %s FROM %s WHERE id = :id", $columns, $tableName);
+            $query = is_string($id) ? 
+                sprintf("SELECT %s FROM %s WHERE :auth = :id", $columns, $tableName) : 
+                sprintf("SELECT %s FROM %s WHERE id = :id", $columns, $tableName);
             $stmt = $this->conn->prepare($query);
+            if (is_string($id)) $stmt->bindParam(':auth', $this->getAuthDetails(), \PDO::PARAM_STR);
             $stmt->bindParam(':id', $id, \PDO::PARAM_INT);
             $stmt->execute();
             $stmt->setFetchMode(\PDO::FETCH_CLASS, get_class($c));
@@ -135,7 +141,34 @@ class DatabaseManager
         }
     }
 
-    public function login() {
-        
+    /**
+     * Logs the user in and stores it in the session.
+     * @param string $class The name of the class
+     * @param mixed $form The form where the POST data is stored
+     * @return void|null
+     */
+    public function login(string $class, $form) {
+        $config = $this->getAuthDetails();
+        switch($config) {
+            case "email":
+                $email = $form->getData("email");
+                Core::dd($email);
+                return;
+            case "username":
+                $username = $form->getData("username");
+                return;
+            default;
+                return null;
+        }
+    }
+
+    /**
+     * Returns the user login identifier from the config file.
+     * @return JSON
+     */
+    private function getAuthDetails() {
+        $config = file_get_contents(substr(dirname(__DIR__), 0, strpos(dirname(__DIR__), "\\vendor\\")) . "/config.json");
+        $json = json_decode($config);
+        return $json->authentication->identifier;
     }
 }

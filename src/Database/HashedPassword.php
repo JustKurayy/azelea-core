@@ -1,5 +1,5 @@
 <?php
-namespace Azelea\Core\Database;
+namespace Azelea\Database;
 
 /**
  * Hashes the password?
