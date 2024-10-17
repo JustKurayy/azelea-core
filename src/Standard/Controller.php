@@ -1,9 +1,12 @@
 <?php
 namespace Azelea\Core\Standard;
 use Azelea\Core\Core;
+use Azelea\Core\Session;
 use Azelea\Templater\Loom;
 
 class Controller {
+    private array $flashMessages = [];
+
     /**
      * Adds the html page to the screen
      * @param mixed $view
@@ -47,5 +50,21 @@ class Controller {
         } catch (\Exception $e) {
             return Core::error($e);
         }
+    }
+
+    /**
+     * Adds a flash message and stores it in the session. 
+     * Possible types: danger, warning, success.
+     * @param string $message The text of the message
+     * @param string $type The type of flash message, also used for the style (optional)
+     * @return void
+     */
+    public function addFlash(string $message, string $type = null) {
+        $sessionManager = new Session();
+        array_push($this->flashMessages, [
+            $message,
+            $type
+        ]);
+        return $sessionManager->set("flashes", $this->flashMessages);
     }
 }

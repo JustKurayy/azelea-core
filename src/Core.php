@@ -92,7 +92,7 @@ class Core {
         
         echo '<div class="dd-container">';
         echo '<div class="dd-item dd-toggle" onclick="this.nextElementSibling.classList.toggle(\'dd-content\'); this.classList.toggle(\'open\');">';
-        echo (is_object($item)) ? '<button><strong>'.$item::class.'</strong></button>' : '<button><strong>'.$item.'</strong></button>';
+        echo (is_object($item)) ? '<button><strong>'.$item::class.'</strong></button>' : ((is_array($item)) ? '<button><strong>Array</strong></button>' : '<button><strong>'.$item.'</strong></button>');
         echo '</div>';
         echo '<div class="dd-content">';
         

@@ -7,7 +7,13 @@ namespace Azelea\Core;
  */
 class Session {
     public function __construct() {
-        $this->startSession();
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            $this->startSession();
+        }
+        if(isset($_SESSION['flashes'])) {
+            $_SESSION['flashes'] = null;
+            unset($_SESSION['flashes']);
+        }
     }
 
     /**
@@ -65,6 +71,7 @@ class Session {
      * Sanitize data to prevent XSS and other injection attacks
      */
     private function sanitize($data) {
-        return htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
+        if (is_string($data)) return htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
+        return $data;
     }
 }
