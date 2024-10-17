@@ -3,16 +3,12 @@ namespace Azelea\Core;
 
 /**
  * The Session Manager for the Framework.
- * Has built in functions for security.
+ * `new Session()` can be called multiple times.
  */
 class Session {
     public function __construct() {
         if (session_status() !== PHP_SESSION_ACTIVE) {
             $this->startSession();
-        }
-        if(isset($_SESSION['flashes'])) {
-            $_SESSION['flashes'] = null;
-            unset($_SESSION['flashes']);
         }
     }
 

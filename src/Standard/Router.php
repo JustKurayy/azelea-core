@@ -25,7 +25,7 @@ class Router {
 
         try {
             foreach ($this->routes as $route) {
-                if ($route['method'] === $_SERVER["REQUEST_METHOD"] && $route['path'] === $_SERVER['REQUEST_URI']) {
+                if ($route['path'] === $_SERVER['REQUEST_URI']) { //$route['method'] === $_SERVER["REQUEST_METHOD"] && 
                     $rt = explode("::", $route['handler']);
                     $className = "Azelea\\Core\\" . $rt[0];
                     $class = new $className;

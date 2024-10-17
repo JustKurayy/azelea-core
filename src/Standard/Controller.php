@@ -62,8 +62,8 @@ class Controller {
     public function addFlash(string $message, string $type = null) {
         $sessionManager = new Session();
         array_push($this->flashMessages, [
-            $message,
-            $type
+            'message'=> $message,
+            'type' => $type
         ]);
         return $sessionManager->set("flashes", $this->flashMessages);
     }

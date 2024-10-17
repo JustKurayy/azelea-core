@@ -31,6 +31,11 @@ class Core {
         }
 
         $this->sessionManager = new Session();
+        if(isset($_SESSION['flashes'])) {
+            $_SESSION['flashes'] = null;
+            unset($_SESSION['flashes']);
+        }
+        
         try {
             if (!file_exists($this->path . "/../src/routes.php")) throw new \Exception("Routes.php not found, cannot forward to page.");
             include $this->path . "/../src/routes.php";

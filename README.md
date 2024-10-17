@@ -14,19 +14,19 @@ Currently I have no idea if others can contribute to this repo. If you can, any 
 
 ### ToDo List
 Stuff that needs to be implemented:
- - Better error/exception handling
- - Better debug data / dd() function
+ - Extend dd() function with better information parsing
  - Model/Entity manager
     1. CLI needs to create them 
     2. CLI needs to push them to db
     3. Migrations needs to be dynamically created
- - System to ensure translation of sites go super easy
-    1. Android's app translation system can be used as example
-    2. The translation folder should either be in src or in the root
-    3. Text should be dynamically callable in the php file with help of Azelea\Core functions
-    4. 
- - Asset loading
-    1. Assets should be loaded from the asset folder in the root, not in /public
+    4. User creation
+    5. User login
  - FTP & WebDav Support
+ - Built-In AJAX
  - Session management
+    1. User ID 
  - Cookie manager
+ - Templater
+    1. Create @extends('base.loom.php') function
+    2. Create @body and @endbody tags
+    3. include base and extend @body tags in template files
