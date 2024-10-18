@@ -19,12 +19,11 @@ Stuff that needs to be implemented:
     1. CLI needs to create them 
     2. CLI needs to push them to db
     3. Migrations needs to be dynamically created
-    4. User creation
-    5. User login
- - FTP & WebDav Support
- - Built-In AJAX
+    4. Ensure only 1 database connection is open
+    5. Types, defined as attributes (like ```#[HashedPassword]```)
+ - (S)FTP & WebDav Support
  - Session management
-    1. User ID 
+    1. User ID or token
  - Cookie manager
  - Templater
     1. Create @extends('base.loom.php') function

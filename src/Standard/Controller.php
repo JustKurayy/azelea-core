@@ -14,11 +14,11 @@ class Controller {
 
     /**
      * Adds the html page to the screen
-     * @param mixed $view
+     * @param string $view
      * @param array $data
      * @return void
      */
-    public function render($view, $data = []) {
+    public function render(string $view, $data = []) {
         try {
             $loom = new Loom($data);
             return $loom->render($view);
@@ -43,7 +43,7 @@ class Controller {
 
     /**
      * Creates an form. 
-     * @param string $item
+     * @param string $class
      * @param mixed $item
      * @return class
      */

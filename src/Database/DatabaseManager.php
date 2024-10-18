@@ -28,8 +28,8 @@ class DatabaseManager
         try {
             $this->conn = new \PDO("mysql:host=$servername;dbname=$database", $username, $password);
             $this->conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-        } catch (\PDOException $e) {
-            return Core::error($e);
+        } catch (\PDOException $e) { 
+            Core::error($e);
         }
     }
 
@@ -57,15 +57,16 @@ class DatabaseManager
      * Pulls the class from the database.
      * Will return all from class type if the ID is left empty.
      * @param string $class name of the class. Can be given with ClassExample::class
-     * @param int $id The id of the model (optional)
+     * @param mixed $id The id of the model (optional)
+     * @return object
      */
-    public function getModel($class, int $id = null) {
+    public function getModel($class, $id = null) {
         $c = new $class();
         $reflection = new \ReflectionClass($c);
 
         $tableName = str_replace("azelea\\core\\", "", strtolower($class));
-        $columns = str_replace("get", "", strtolower(implode(", ", array_keys($reflection->getDefaultProperties()))));
-    
+        $columns = $this->getColumns($reflection->getProperties());
+
         $all = function() use ($tableName, $columns, $c) {
             $query = sprintf("SELECT %s FROM %s", $columns, $tableName);
             $stmt = $this->conn->prepare($query);
@@ -75,12 +76,12 @@ class DatabaseManager
         };
     
         $one = function($id) use ($tableName, $columns, $c) {
-            $query = is_string($id) ? 
+            $query = (!is_numeric($id)) ? 
                 sprintf("SELECT %s FROM %s WHERE :auth = :id", $columns, $tableName) : 
                 sprintf("SELECT %s FROM %s WHERE id = :id", $columns, $tableName);
             $stmt = $this->conn->prepare($query);
-            if (is_string($id)) $stmt->bindParam(':auth', $this->getAuthDetails(), \PDO::PARAM_STR);
-            $stmt->bindParam(':id', $id, \PDO::PARAM_INT);
+            if (!is_numeric($id)) $stmt->bindParam(':auth', $this->getAuthDetails(), \PDO::PARAM_STR);
+            (!is_numeric($id)) ? $stmt->bindParam(':id', $id, \PDO::PARAM_INT) : $stmt->bindParam(':id', $id, \PDO::PARAM_INT);
             $stmt->execute();
             $stmt->setFetchMode(\PDO::FETCH_CLASS, get_class($c));
             $data = $stmt->fetchAll();
@@ -96,21 +97,20 @@ class DatabaseManager
 
     /**
      * Parses all the data in the class into an sql query.
-     * @param class $class
-     * @return void
+     * @param object $class
+     * @return int The number of queries stored
      */
     public function parse($class) {
         $reflection = new \ReflectionClass($class);
-        $properties = $reflection->getDefaultProperties();
-        unset($properties['id']); // Removed to prevent clashing with primary key
+        $properties = $reflection->getProperties();
+        if ($properties[0]->name == "id") unset($properties[0]); // Removed to prevent clashing with primary key
+        $columns = $this->getColumns($properties);
     
-        $fields = [];
         $values = [];
-    
-        foreach ($properties as $property => $value) {
-            $getter = 'get' . ucfirst($property);
+        foreach ($properties as $property) {
+            $getter = 'get' . ucfirst($property->getName());
+            
             if (method_exists($class, $getter)) {
-                $fields[] = strtolower($property);
                 $values[] = $this->conn->quote($class->$getter());
             }
         }
@@ -118,12 +118,25 @@ class DatabaseManager
         $query = sprintf(
             "INSERT INTO %s (%s) VALUES (%s)", 
             str_replace("azelea\\core\\", "", strtolower($class::class)),
-            implode(", ", $fields),
+            $columns,
             implode(", ", $values)
         );
     
-        array_push($this->queries, $query);
-    }    
+        return array_push($this->queries, $query);
+    }
+    
+    /**
+     * Get the property names from class and parses them into SQL readable.
+     * @param mixed $properties
+     * @return string
+     */
+    private function getColumns($properties) {
+        $pattern = '/Property \[ private (?:int|string) \$(.*?) \]/'; //TODO: needs dynamic type replacing
+        $replacement = '$1';
+        $result = preg_replace($pattern, $replacement, implode(", ", $properties));
+        $result = preg_replace('/\s*,/', ',', $result);
+        return strtolower($result);
+    }
 
     /**
      * Pushes all local sql queries into the database.
@@ -149,26 +162,16 @@ class DatabaseManager
      */
     public function login(string $class, $form) {
         $config = $this->getAuthDetails();
-        switch($config) {
-            case "email":
-                $email = $form->getData("email");
-                Core::dd($email);
-                return;
-            case "username":
-                $username = $form->getData("username");
-                return;
-            default;
-                return null;
-        }
+        $id = $form->getData($config);
+        $user = $this->getModel($class, $id);
+        return $user;
     }
 
     /**
      * Returns the user login identifier from the config file.
-     * @return JSON
+     * @return string The identifier type
      */
     private function getAuthDetails() {
-        $config = file_get_contents(substr(dirname(__DIR__), 0, strpos(dirname(__DIR__), "\\vendor\\")) . "/config.json");
-        $json = json_decode($config);
-        return $json->authentication->identifier;
+        return $_ENV['AUTH_ID'];
     }
 }

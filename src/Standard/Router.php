@@ -1,6 +1,5 @@
 <?php
 namespace Azelea\Core\Standard;
-use Azelea\Core\Core;
 
 /**
  * The AzeleaRouter handles all page loading,
@@ -10,34 +9,40 @@ use Azelea\Core\Core;
 class Router {
     private $routes = [];
 
-    public function addRoute($method, $path, $handler, $args = []) {
-        array_push($this->routes, [
+    /**
+     * Adds a route to the backlog.
+     * `$handler` can be used like 'CustomController::method'
+     * 
+     * @param array $method All HTTP methods this route is allowed to use
+     * @param string $path The route URL
+     * @param mixed $handler Name of the custom controller and the method within
+     * @return int The amount of routes stored
+     */
+    public function addRoute(array $method, string $path, $handler) {
+        return array_push($this->routes, [
             'method' => $method,
             'path' => $path,
-            'handler' => $handler,
-            'args' => $args
+            'handler' => $handler
         ]);
     }
 
+    /**
+     * Loads the correct route from the backlog
+     */
     public function load() {
         header("X-XSS-Protection: 1; mode=block");
         header("X-Content-Type-Options: nosniff");
-
-        try {
-            foreach ($this->routes as $route) {
-                if ($route['path'] === $_SERVER['REQUEST_URI']) { //$route['method'] === $_SERVER["REQUEST_METHOD"] && 
-                    $routeParams = explode("::", $route['handler']);
-                    $className = "Azelea\\Core\\" . $routeParams[0];
-                    $classMethod = $routeParams[1];
-                    $class = $this->injectDependencies($className, $classMethod, $route['args']);
-                    return $class;
-                }
+        
+        foreach ($this->routes as $route) {
+            if (in_array($_SERVER["REQUEST_METHOD"], $route['method']) && $route['path'] === $_SERVER['REQUEST_URI']) {
+                $routeParams = explode("::", $route['handler']);
+                $className = "Azelea\\Core\\" . $routeParams[0];
+                $classMethod = $routeParams[1];
+                $class = $this->injectDependencies($className, $classMethod);
+                return $class;
             }
-    
-            throw new \Exception("Invalid Route");
-        } catch (\Exception $e) {
-            Core::error($e);
         }
+        return ($_ENV['APP'] == "prod" || $_ENV['APP'] == "production") ? header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found",true,404) : throw new \Exception("Invalid Route");
     }
 
     /**
@@ -49,7 +54,7 @@ class Router {
      * @param array $userArgs Is passed through custom routes (routes.php)
      * @return object
      */
-    private function injectDependencies($class, $methodName, array $userArgs = []) {
+    private function injectDependencies($class, $methodName) {
         $reflector = new \ReflectionClass($class);
         $method = $reflector->getMethod($methodName);
         $parameters = $method->getParameters();

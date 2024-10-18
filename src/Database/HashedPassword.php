@@ -6,8 +6,13 @@ namespace Azelea\Database;
  */
 #[HashedPassword]
 class HashedPassword {
+    private string $password;
     public function __construct(string $password) {
-        $hash = password_hash($password, PASSWORD_BCRYPT);
+        $this->password = $password;
+    }
+
+    public function hashPassword() {
+        $hash = password_hash($this->password, PASSWORD_DEFAULT);
         $success = ($hash) ? $hash : false;
         return $success;
     }
