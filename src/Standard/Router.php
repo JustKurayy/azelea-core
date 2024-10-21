@@ -1,5 +1,6 @@
 <?php
 namespace Azelea\Core\Standard;
+use Azelea\Core\Core;
 
 /**
  * The AzeleaRouter handles all page loading,
@@ -70,8 +71,12 @@ class Router {
                 $dependencies[] = null;
             }
         }
-
-        $instance = $reflector->newInstance();
-        return $method->invokeArgs($instance, $dependencies);
-    }    
+       
+        try {
+            $instance = $reflector->newInstance();
+            return $method->invokeArgs($instance, $dependencies);
+        } catch (\Exception $e) {
+            Core::error($e);
+        }
+    }   
 }
