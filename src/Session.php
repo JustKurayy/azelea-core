@@ -10,6 +10,12 @@ class Session {
         if (session_status() !== PHP_SESSION_ACTIVE) {
             $this->startSession();
         }
+
+        // Remove leftover flashes
+        if(isset($_SESSION['flashes'])) {
+            $_SESSION['flashes'] = null;
+            unset($_SESSION['flashes']);
+        }
     }
 
     /**
@@ -30,26 +36,56 @@ class Session {
         }
     }
 
+    /**
+     * @deprecated
+     */
     public function set($key, $value) {
         $_SESSION[$key] = $this->sanitize($value);
     }
 
+    static public function setSessionKey($key, $value) {
+        $_SESSION[$key] = self::dataSanitize($value);
+    }
+
+    /**
+     * @deprecated
+     */
     public function get($key) {
         return isset($_SESSION[$key]) ? $this->sanitize($_SESSION[$key]) : null;
+    }
+
+    static public function getSessionKey($key) {
+        return isset($_SESSION[$key]) ? self::dataSanitize($_SESSION[$key]) : null;
+    }
+
+    static public function addFlash(string $message, string $type) {
+        return Session::setSessionKey("flashes", [
+            'message'=> $message,
+            'type' => $type
+        ]);
     }
 
     public function remove($key) {
         unset($_SESSION[$key]);
     }
 
+    /**
+     * @deprecated
+     */
     public function getUserId() {
         return $this->get('user_id');
     }
 
+    /**
+     * @deprecated
+     */
     public function setUserId($userId) {
         $this->set('user_id', $userId);
     }
 
+    /**
+     * @deprecated
+     */
     public function hasUserId(): bool {
         return isset($_SESSION["user_id"]);
     }
@@ -65,8 +101,17 @@ class Session {
 
     /**
      * Sanitize data to prevent XSS and other injection attacks
+     * @deprecated
      */
     private function sanitize($data) {
+        if (is_string($data)) return htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
+        return $data;
+    }
+
+    /**
+     * Sanitize data to prevent XSS and other injection attacks
+     */
+    static private function dataSanitize($data) {
         if (is_string($data)) return htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
         return $data;
     }

@@ -2,7 +2,7 @@
 namespace Azelea\Core;
 
 class Forms {
-    private $fieldHtml = array(); //stores all the fields, also used for loading them in
+    private $fieldHtml = []; //stores all the fields, also used for loading them in
     private $formField; //stores the input field
     private $csrf;
 
@@ -45,7 +45,7 @@ class Forms {
                 case "submit":
                     if (empty($_SESSION['_csrf'][$field['name']])) $this->generateCsrf($field['name']);
                     $this->csrf = $field['name'];
-                    $b = "<input type='submit' class='".$field['classes']."' name='submit' value='".$field['name']."'>";
+                    $b = "<button type='submit' class='".$field['classes']."'>".$field['name']."</button>";
                     array_push($this->fieldHtml, $b);
                     break;
             }
@@ -133,13 +133,35 @@ class Forms {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if ($_POST['_csrf'] === $_SESSION['_csrf'][$this->csrf]) {
                 $_SESSION['_csrf'] = [];
-                //TODO: foreach filter check if valid
+
+                $arr = [];
+                $i = 0;
+                foreach($this->fieldHtml as $field) {
+                    if (str_contains($field, "<input")) {
+                        array_push($arr, $i); 
+                        $i++;
+                    }
+                }
+
+                if (count($_POST) != count($arr)) return $this->formFalse("Something went wrong");
+                foreach ($_POST as $post) {
+                    if (empty($post)) return $this->formFalse("Fill in correct data");
+                }
+
                 return true;
             } else {
-                return false;
+                return $this->formFalse("Something went wrong");
             }
         }
         return false; //incase the button isn't pressed
+    }
+
+    private function formFalse(string $message) {
+        Session::setSessionKey('flashes', [
+            'message'=> $message,
+            'type' => 'danger'
+        ]);
+        return false;
     }
 
     /**

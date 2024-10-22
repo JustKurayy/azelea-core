@@ -33,10 +33,6 @@ class Core {
         set_exception_handler([$this, 'error']); //sets a custom exception handler
         
         $this->sessionManager = new Session();
-        if(isset($_SESSION['flashes'])) {
-            $_SESSION['flashes'] = null;
-            unset($_SESSION['flashes']);
-        }
         
         try {
             if (!file_exists($this->path . "/../src/routes.php")) throw new \Exception("Routes.php not found, cannot forward to page.");
@@ -54,7 +50,7 @@ class Core {
      */
     public static function dd($item) {
         AzeleaException::dd($item);
-    } 
+    }
     
     /**
      * Shows stacktrace error

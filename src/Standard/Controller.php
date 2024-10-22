@@ -6,11 +6,6 @@ use Azelea\Templater\Loom;
 
 class Controller {
     private array $flashMessages = [];
-    private Session $sessionManager;
-
-    public function __construct() {
-        $this->sessionManager = new Session();
-    }
 
     /**
      * Adds the html page to the screen
@@ -65,10 +60,6 @@ class Controller {
      * @return void
      */
     public function addFlash(string $message, string $type = null) {
-        array_push($this->flashMessages, [
-            'message'=> $message,
-            'type' => $type
-        ]);
-        return $this->sessionManager->set("flashes", $this->flashMessages);
+        return Session::addFlash($message, $type);
     }
 }
