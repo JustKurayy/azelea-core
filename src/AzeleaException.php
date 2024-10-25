@@ -89,12 +89,12 @@ class AzeleaException extends \Exception {
     static function error(\Throwable $exception) {
         // Clear the document body
         echo "<script>document.body.innerHTML = '';</script>";
-        $messg = "";
-        switch ($exception->getCode()) {
-            case 1045:
-                $messg = "Database Credentials do not match. Possibly wrong username or password.";
-                break;
-        }
+        // $messg = "";
+        // switch ($exception->getCode()) {
+        //     case 1045:
+        //         $messg = "Database Credentials do not match. Possibly wrong username or password.";
+        //         break;
+        // }
         ?>
         <!DOCTYPE html>
         <html lang="en">
@@ -158,6 +158,7 @@ class AzeleaException extends \Exception {
             }
         </style>
         <body>
+            <div style="height: 10vh;"></div>
             <div class="wrapper">
                 <div class="centerdiv">
                 <?php
@@ -165,7 +166,7 @@ class AzeleaException extends \Exception {
                     $file = $exception->getFile();
 
                     echo "<h2>".$exception->getMessage()."</h2>";
-                    echo "<h4>".$messg."</h4>";
+                    // echo "<h4>".$messg."</h4>";
                     echo "<div class='code'>";
                     echo "<strong>File:</strong> " . htmlspecialchars($file) . " <strong>Line:</strong> " . htmlspecialchars($line) . "<br>";
 

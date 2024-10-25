@@ -16,6 +16,10 @@ class Session {
             $_SESSION['flashes'] = null;
             unset($_SESSION['flashes']);
         }
+
+        if ($this->hasUserId()) {
+            // Core::dd(self::getSessionKey("user_id"));
+        }
     }
 
     /**
@@ -59,21 +63,26 @@ class Session {
     }
 
     static public function addFlash(string $message, string $type) {
-        return Session::setSessionKey("flashes", [
-            'message'=> $message,
-            'type' => $type
-        ]);
+        $flashes = self::getSessionKey("flashes");
+        if ($flashes === null) {
+            self::setSessionKey("flashes", [[
+                    'message'=> $message,
+                    'type' => $type
+                ]]);
+        } else {
+            return array_push($flashes, [
+                'message'=> $message,
+                'type' => $type
+            ]);
+        }
     }
 
     public function remove($key) {
         unset($_SESSION[$key]);
     }
 
-    /**
-     * @deprecated
-     */
-    public function getUserId() {
-        return $this->get('user_id');
+    private function getUserId() {
+        return self::getSessionKey('user_id');
     }
 
     /**
@@ -83,10 +92,7 @@ class Session {
         $this->set('user_id', $userId);
     }
 
-    /**
-     * @deprecated
-     */
-    public function hasUserId(): bool {
+    private function hasUserId(): bool {
         return isset($_SESSION["user_id"]);
     }
 

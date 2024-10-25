@@ -1,6 +1,7 @@
 <?php
 namespace Azelea\Core\Database;
 use Azelea\Core\Core;
+use Azelea\Core\Session;
 
 /**
  * The database manager for the AzeleaCore
@@ -46,7 +47,7 @@ class DatabaseManager
      */
     public function addSql(string $sql)
     {
-        array_push(self::$queries, $sql);
+        return array_push(self::$queries, $sql);
     }
 
     /**
@@ -89,6 +90,12 @@ class DatabaseManager
         } catch (\PDOException $e) {
             Core::error($e);
         }
+    }
+
+    public function AuthUser(string $token) {
+        $id = explode("_", $token);
+        if ($id[0] != $this->getAuthDetails()) Core::dd("no");
+
     }
 
     /**
@@ -154,13 +161,29 @@ class DatabaseManager
      * Logs the user in and stores it in the session.
      * @param string $class The name of the class
      * @param mixed $form The form where the POST data is stored
-     * @return void|null
+     * @return object|false
      */
     public function login(string $class, $form) {
         $config = $this->getAuthDetails();
         $id = $form->getData($config);
         $user = $this->getModel($class, $id);
-        return $user;
+        if (password_verify($form->getData("password"), $user->getPassword())) {
+            $uuid = uniqid($config."_", true);
+            $uuid = str_replace(".", "", $uuid);
+            $userId = $user->getId();
+            //there should also be a section to check if this id already has a token.
+            //if so, that token should be revoked and this one should be used instead.
+            //in config, there should be a limit of tokens a single ID can have.
+            //like five tokens, meaning that id can login to 5 different browsers before 
+            //the oldest token starts to get revoked.
+            $this->addSql("INSERT INTO tokens (uuid, user_id) VALUES ('$uuid', '$userId')");
+            $this->push();
+            Session::setSessionKey("user_id", $uuid);
+            return $user;
+        } else {
+            Session::addFlash("Email and password do not match", "danger");
+            return false;
+        }
     }
 
     /**
