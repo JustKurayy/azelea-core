@@ -77,8 +77,7 @@ class DatabaseManager
                 sprintf("SELECT %s FROM %s WHERE :auth = :id", $columns, $tableName) : 
                 sprintf("SELECT %s FROM %s WHERE id = :id", $columns, $tableName);
             $stmt = $this->conn->prepare($query);
-            if (!is_numeric($id)) $stmt->bindParam(':auth', $this->getAuthDetails(), \PDO::PARAM_STR);
-            (!is_numeric($id)) ? $stmt->bindParam(':id', $id, \PDO::PARAM_INT) : $stmt->bindParam(':id', $id, \PDO::PARAM_INT);
+            (!is_numeric($id)) ? $stmt->bindParam(':auth', $this->getAuthDetails(), \PDO::PARAM_STR) : $stmt->bindParam(':id', $id, \PDO::PARAM_INT);
             $stmt->execute();
             $stmt->setFetchMode(\PDO::FETCH_CLASS, get_class($c));
             $data = $stmt->fetchAll();
@@ -90,12 +89,6 @@ class DatabaseManager
         } catch (\PDOException $e) {
             Core::error($e);
         }
-    }
-
-    public function AuthUser(string $token) {
-        $id = explode("_", $token);
-        if ($id[0] != $this->getAuthDetails()) Core::dd("no");
-
     }
 
     /**
@@ -151,6 +144,7 @@ class DatabaseManager
             foreach(self::$queries as $q) {
                 $this->conn->exec($q);
             }
+            self::$queries = [];
             $this->conn->commit();
         } catch (\PDOException $e) {
             return Core::error($e);
@@ -168,8 +162,7 @@ class DatabaseManager
         $id = $form->getData($config);
         $user = $this->getModel($class, $id);
         if (password_verify($form->getData("password"), $user->getPassword())) {
-            $uuid = uniqid($config."_", true);
-            $uuid = str_replace(".", "", $uuid);
+            $uuid = $this->generateToken();
             $userId = $user->getId();
             //there should also be a section to check if this id already has a token.
             //if so, that token should be revoked and this one should be used instead.
@@ -187,6 +180,35 @@ class DatabaseManager
     }
 
     /**
+     * Authenticates the user from out of the session.
+     * @param string $token The token that is stored inside the session
+     * @return void
+     */
+    private function AuthUser(string $token) {
+        $id = explode("_", $token); 
+        if ($id[0] != $this->getAuthDetails()) Core::dd("no");
+    }
+
+    /**
+     * Generates a token. 
+     * Can also be used for generating API tokens.
+     */
+    public function generateToken(int $length = 32): string
+    {
+        $token = "";
+        try {
+            $bytesWithMargin = random_bytes($length*3);
+            $base64 = base64_encode($bytesWithMargin);
+            $purified = preg_replace("/[+=\/.]/", "", $base64);
+            $token = substr($purified, 0, $length);
+        } catch (\Exception $e) { 
+            Core::error($e);
+        }
+
+        return $token;
+    }
+
+    /**
      * Returns the user login identifier from the config file.
      * @return string The identifier type
      */
@@ -195,7 +217,20 @@ class DatabaseManager
     }
 
     /**
-     * Indev version of migrating to database.
+     * Checks all Models and compares them to
+     * the database counterpart.
+     * If any information is missing, it 
+     * creates it inside the migration.
+     * 
+     * Also creates a file in /migrations containing
+     * all the information that needs to be parsed.
+     */
+    public function createMigration() {
+        
+    }
+
+    /**
+     * Goes through the migration folders and checks them off one for one.
      * @return void Pushes the queries to db
      */
     public function migrate() {

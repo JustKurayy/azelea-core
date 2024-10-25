@@ -81,17 +81,6 @@ class Session {
         unset($_SESSION[$key]);
     }
 
-    private function getUserId() {
-        return self::getSessionKey('user_id');
-    }
-
-    /**
-     * @deprecated
-     */
-    public function setUserId($userId) {
-        $this->set('user_id', $userId);
-    }
-
     private function hasUserId(): bool {
         return isset($_SESSION["user_id"]);
     }
