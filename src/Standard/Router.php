@@ -1,4 +1,5 @@
 <?php
+
 namespace Azelea\Core\Standard;
 
 use Azelea\Core\Core;
@@ -8,8 +9,9 @@ use Azelea\Core\Core;
  * redirects the URLs to their corresponding pages, and
  * manages the controllers.
  */
-class Router {
-    private $routes = [];
+class Router
+{
+    private array $routes = [];
 
     /**
      * Adds a route to the backlog.
@@ -19,11 +21,12 @@ class Router {
      * @param string $handler The controller method in the format 'CustomController::method'
      * @return int The number of routes stored
      */
-    public function addRoute(array $method, string $path, string $handler): int {
+    public function addRoute(array $method, string $path, string $handler): int
+    {
         $pathRegex = preg_replace('/\{(\w+)\}/', '([^/]+)', $path);
         $pathRegex = str_replace('/', '\/', $pathRegex);
         $pathRegex = '/^' . $pathRegex . '$/';
-        
+
         return array_push($this->routes, [
             'method' => $method,
             'path' => $pathRegex,
@@ -35,18 +38,19 @@ class Router {
     /**
      * Loads the correct route from the backlog and invokes the corresponding handler.
      */
-    public function load() {
+    public function load()
+    {
         header("X-XSS-Protection: 1; mode=block");
         header("X-Content-Type-Options: nosniff");
-    
+
         foreach ($this->routes as $route) {
             if ($this->isRouteMatched($route)) {
                 return $this->handleRoute($route);
             }
         }
-    
+
         $this->handleNotFound();
-    }    
+    }
 
     /**
      * Checks if the current request matches the given route.
@@ -54,9 +58,10 @@ class Router {
      * @param array $route The route to check
      * @return bool True if the route matches, false otherwise
      */
-    private function isRouteMatched(array $route): bool {
-        return in_array($_SERVER["REQUEST_METHOD"], $route['method']) && 
-               preg_match($route['path'], $_SERVER['REQUEST_URI'], $matches);
+    private function isRouteMatched(array $route): bool
+    {
+        return in_array($_SERVER["REQUEST_METHOD"], $route['method']) &&
+            preg_match($route['path'], $_SERVER['REQUEST_URI'], $matches);
     }
 
     /**
@@ -65,21 +70,22 @@ class Router {
      * @param array $route The matched route
      * @return mixed The result of the controller method
      */
-    private function handleRoute(array $route) {
+    private function handleRoute(array $route)
+    {
         preg_match($route['path'], $_SERVER['REQUEST_URI'], $matches);
         array_shift($matches); // Remove the original from array
-    
+
         // Creates an array with named parameters
         $params = [];
         preg_match_all('/\{(\w+)\}/', $route['params'], $paramNames);
-        
+
         foreach ($paramNames[1] as $index => $paramName) {
             $params[$paramName] = $matches[$index];
         }
-    
+
         [$className, $classMethod] = explode("::", $route['handler']);
         $className = "Azelea\\Core\\" . $className;
-    
+
         return $this->injectDependencies($className, $classMethod, $params);
     }
 
@@ -87,7 +93,8 @@ class Router {
      * Handles a 404 Not Found error.
      * Returns an error in dev mode.
      */
-    private function handleNotFound() {
+    private function handleNotFound()
+    {
         if ($_ENV['APP'] === "prod" || $_ENV['APP'] === "production") {
             header($_SERVER["SERVER_PROTOCOL"] . " 404 Not Found", true, 404);
         } else {
@@ -103,7 +110,8 @@ class Router {
      * @param array $params URL parameter information
      * @return mixed
      */
-    private function injectDependencies(string $class, string $methodName, array $params = []) {
+    private function injectDependencies(string $class, string $methodName, array $params = [])
+    {
         $reflector = new \ReflectionClass($class);
         $method = $reflector->getMethod($methodName);
         $dependencies = [];
@@ -127,9 +135,10 @@ class Router {
      * @param array $params The URL parameters
      * @return mixed The resolved parameter value
      */
-    private function resolveParameter(\ReflectionParameter $parameter, array $params) {
+    private function resolveParameter(\ReflectionParameter $parameter, array $params)
+    {
         $type = $parameter->getType();
-        
+
         if ($type && !$type->isBuiltin()) {
             $className = $type->getName();
             return class_exists($className) ? new $className() : null;

@@ -8,7 +8,7 @@ use Azelea\Core\Core;
 class DatabaseManager
 {
     private $conn;
-    private $queries = [];
+    private static array $queries = [];
 
     /**
      * When the DatabaseManager is construced, 
@@ -46,11 +46,7 @@ class DatabaseManager
      */
     public function addSql(string $sql)
     {
-        try {
-            return $this->conn->exec($sql);
-        } catch (\PDOException $e) {
-            return Core::error($e);
-        }
+        array_push(self::$queries, $sql);
     }
 
     /**
@@ -122,7 +118,7 @@ class DatabaseManager
             implode(", ", $values)
         );
     
-        return array_push($this->queries, $query);
+        return array_push(self::$queries, $query);
     }
     
     /**
@@ -145,7 +141,7 @@ class DatabaseManager
     public function push() {
         try {
             $this->conn->beginTransaction();
-            foreach($this->queries as $q) {
+            foreach(self::$queries as $q) {
                 $this->conn->exec($q);
             }
             $this->conn->commit();
@@ -173,5 +169,26 @@ class DatabaseManager
      */
     private function getAuthDetails() {
         return $_ENV['AUTH_ID'];
+    }
+
+    /**
+     * Indev version of migrating to database.
+     * @return void Pushes the queries to db
+     */
+    public function migrate() {
+        $dir = substr(dirname(__DIR__), 0, strpos(dirname(__DIR__), "\\vendor\\"));
+        $d = glob($dir."\\migrations\\*.php");
+        // Core::dd(str_replace($dir."\\migrations\\", "", str_replace(".php", "", $d[0])));
+        foreach ($d as $item) {
+            include "$item";
+            $c = "\\".str_replace($dir."\\migrations\\", "", str_replace(".php", "", $item));
+            $reflector = new \ReflectionClass($c);
+            $instance = $reflector->newInstance();
+            $remove = $reflector->getMethod("remove");
+            $remove->invoke($instance, []);
+            $insert = $reflector->getMethod("insert");
+            $insert->invoke($instance, []);
+        }
+        return $this->push();
     }
 }

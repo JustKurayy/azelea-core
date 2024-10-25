@@ -18,7 +18,7 @@ class AzeleaException extends \Exception {
         Core::error($this); //Calls the static function containing the UI
     }
 
-     /**
+    /**
      * Debugs given param.
      * @param mixed $item
      * @return exit
