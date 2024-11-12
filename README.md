@@ -14,7 +14,6 @@ Currently I have no idea if others can contribute to this repo. If you can, any 
 
 ### ToDo List
 Stuff that needs to be implemented:
- - Extend dd() function with better information parsing
  - Model/Entity manager
     1. CLI needs to create them 
     2. CLI needs to push them to db
@@ -25,7 +24,5 @@ Stuff that needs to be implemented:
  - Session management
     1. User ID or token
  - Cookie manager
- - Templater
-    1. Create @extends('base.loom.php') function
-    2. Create @body and @endbody tags
-    3. include base and extend @body tags in template files
+ - Form Creator
+    1. HTML Cleanup
