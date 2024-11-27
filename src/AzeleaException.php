@@ -116,7 +116,6 @@ class AzeleaException extends \Exception {
                 justify-content: center;
                 align-items: center;
                 flex-direction: column;
-                height: 100%;
             }
             .centerdiv {
                 width: 1300px;

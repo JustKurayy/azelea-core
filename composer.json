@@ -6,7 +6,10 @@
     "autoload": {
         "psr-4": {
             "Azelea\\Core\\": "src/"
-        }
+        },
+        "files": [
+            "src/Globals.php"
+        ]
     },
     "authors": [
         {
@@ -14,7 +17,5 @@
         }
     ],
     "minimum-stability": "stable",
-    "require": {
-        "vlucas/phpdotenv": "^5.6"
-    }
+    "require": { }
 }
